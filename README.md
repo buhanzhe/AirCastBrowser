@@ -1,6 +1,6 @@
 # 空投浏览器 · AirCastBrowser
 
-面向 Android 手机、平板的浏览器，支持多标签网页、媒体播放、AirPlay 投屏、[网页电视]](https://github.com/buhanzhe/NativeWasmTv)投屏协议 与局域网网页管理。支持 Android 5.0 及以上。
+面向 Android 手机、平板的浏览器，支持多标签网页、媒体播放、AirPlay 投屏、[网页电视](https://github.com/buhanzhe/NativeWasmTv)投屏协议 与局域网网页管理。支持 Android 5.0 及以上。
 
 ## 下载与更新
 
