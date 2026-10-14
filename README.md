@@ -14,13 +14,13 @@
 
 ## 网页管理
 
-手机和设备连接同一局域网，打开应用显示的管理地址或二维码。管理端口从 `9966` 开始，以设备实际显示为准。管理页面、飞鼠和录屏网页资源统一维护于本仓库。
+手机和设备连接同一局域网，打开应用显示的管理地址或二维码。默认管理端口为 `9955`；被占用时自动尝试后续端口，以设备实际显示为准。管理页面、飞鼠和录屏网页资源统一维护于本仓库。
 
 ## 本地打包（Windows）
 
 配置 `local.properties` 中的 Android SDK，并准备 `.signing/aircast-release.jks` 和 `.signing/aircast-keystore-info.properties`，运行 `build-release.bat`。
 
-`output` 目录包含三个 APK 和 `version-lite.json`、`version.json`、`version-iptv.json`；更新配置包含版本号、各架构下载地址及 SHA-256。发布到本仓库的同一个 Release 即可。
+`output` 目录包含三个 APK 和唯一的更新配置 `version-lite.json`；更新配置包含版本号、各架构下载地址及 SHA-256。发布到本仓库的同一个 Release 即可。
 
 签名文件与混淆映射仅保存在本地。
 
