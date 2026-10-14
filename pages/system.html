@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>系统信息 · nTv</title>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/night.css" />
+  </head>
+  <body data-parent="/index.html">
+    <main id="systemInfoPage" class="secondary-page channel-config-page">
+      <div class="top">
+        <button class="back-button" onclick="goBack()">‹ 返回</button>
+        <div class="page-title">系统信息</div>
+        <div class="online"><span class="dot"></span><span id="systemStatus">连接中</span></div>
+      </div>
+      <section class="config-hero">
+        <h2 id="systemDeviceTitle">这台设备</h2>
+        <p id="systemDeviceDescription">
+          查看设备本机的系统、硬件、显示和网络信息。
+        </p>
+      </section>
+      <section>
+        <div class="section-head"><h2>系统与应用</h2></div>
+        <div class="system-info-list">
+          <div class="system-info-row">
+            <span>Android 系统</span><b id="sysAndroid">正在读取…</b>
+          </div>
+          <div class="system-info-row"><span>设备型号</span><b id="sysDevice">正在读取…</b></div>
+          <button id="appUpdateButton" class="system-info-row system-update-row" type="button"
+            onclick="appUpdateClick()">
+            <span>应用版本<small id="sysUpdateStatus">点击检查更新</small></span>
+            <b><span id="sysApp">正在读取…</span><span id="appUpdateAction" class="app-update-action">检查更新</span></b>
+          </button>
+          <div class="system-info-row webview-info-row">
+            <span>WebView</span><b id="sysWebViewSummary">正在读取…</b>
+          </div>
+        </div>
+      </section>
+      <section>
+        <div class="section-head"><h2>硬件与显示</h2></div>
+        <div class="system-info-list">
+          <div class="system-info-row"><span>CPU 核心</span><b id="sysCpu">正在读取…</b></div>
+          <div class="system-info-row"><span>CPU 架构</span><b id="sysAbi">正在读取…</b></div>
+          <div class="system-info-row"><span>内存/存储</span><b id="sysMemory">正在读取…</b></div>
+          <div class="system-info-row"><span>显示参数</span><b id="sysDisplay">正在读取…</b></div>
+        </div>
+      </section>
+      <section>
+        <div class="section-head"><h2>网络</h2></div>
+        <div class="system-info-list">
+          <div class="system-info-row"><span>局域网 IPv4</span><b id="sysIpv4">无</b></div>
+          <div class="system-info-row"><span>公网 IPv6</span><b id="sysIpv6">无</b></div>
+        </div>
+        <p class="system-info-note">公网 IPv6 仅显示当前网卡上可路由的全局地址。</p>
+      </section>
+      <section id="apkTransferSection">
+        <div class="section-head"><h2>APK 投送</h2></div>
+        <input id="apkFile" class="visually-hidden-file" type="file"
+          accept=".apk,application/vnd.android.package-archive" onchange="sendSelectedApk()" />
+        <div class="actions">
+          <button id="apkTransferButton" class="primary wide" onclick="chooseApk()">
+            选择 APK 并发送
+          </button>
+        </div>
+        <div id="apkTransferProgress" class="upload-progress" aria-hidden="true">
+          <div id="apkTransferProgressBar" class="upload-progress-bar"></div>
+        </div>
+        <p id="apkTransferHint" class="hint">发送到当前网页所在的设备；安装成功后自动清理 APK。</p>
+      </section>
+    </main>
+    <div id="message" class="message"></div>
+    <script src="/js/navigation.js?v=20260926"></script>
+    <script src="/js/common.js?v=20260926-nav"></script>
+    <script src="/js/pages/system.js"></script>
+  </body>
+</html>

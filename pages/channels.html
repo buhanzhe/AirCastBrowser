@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>频道配置 · nTv</title>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/night.css" />
+  </head>
+  <body data-parent="/index.html">
+    <main id="channelConfigPage" class="secondary-page channel-config-page">
+      <div class="top">
+        <button class="back-button" onclick="goBack()">‹ 返回</button>
+        <div class="page-title">频道配置</div>
+        <div class="online"><span class="dot"></span><span id="channelStatus">电视在线</span></div>
+      </div>
+      <section class="config-hero">
+        <h2>在手机上整理频道</h2>
+        <p>
+          电视优先校验并复用频道缓存，手机负责解析和去重。以后冷启动可直接加载，不必重新合并多个来源。
+        </p>
+        <div class="config-stats">
+          <span id="configSourceStat" class="config-stat">0 个来源</span
+          ><span id="configGroupStat" class="config-stat">等待刷新</span
+          ><span id="configChannelStat" class="config-stat">等待电视</span>
+        </div>
+      </section>
+      <section class="config-source-section">
+        <div class="section-head">
+          <h2>频道列表</h2>
+          <a href="/pages/groups.html">管理频道分组 ›</a>
+        </div>
+        <div id="playlistSources" class="source-list"></div>
+        <div class="config-actions">
+          <button onclick="addPlaylistSource()">添加源地址</button
+          ><button onclick="openRecommendedSourcePicker()">添加推荐源</button
+          ><button onclick="importBrowserBookmarks()">导入浏览器书签</button>
+        </div>
+        <div id="mergePanel" class="merge-panel">
+          <div class="merge-copy">
+            <b id="mergeTitle">准备刷新</b><span id="mergeDetail">选择需要的来源</span>
+          </div>
+          <div class="merge-progress"><i></i></div>
+        </div>
+        <button
+          id="mergeButton"
+          class="primary wide push-button"
+          onclick="mergeAndPushPlaylistSources()"
+        >
+          刷新频道列表
+        </button>
+        <div class="config-note">
+          电视先校验来源缓存，无法读取时再由手机直连；解析与去重仍在当前手机完成。
+        </div>
+      </section>
+      <section class="config-epg-section">
+        <div class="section-head">
+          <h2>节目单</h2>
+          <span class="hint">按从上到下的顺序优先匹配</span>
+        </div>
+        <div id="epgUrls" class="epg-source-list"></div>
+        <div class="actions">
+          <button onclick="addEpgSource()">添加地址</button
+          ><button onclick="useRecommendedEpg()">添加推荐节目单</button>
+        </div>
+        <button class="primary wide push-button" onclick="saveEpg()">保存节目单</button>
+        <div class="config-note">
+          前面的来源优先；后续来源中已出现的频道资料和节目内容会自动忽略。
+        </div>
+      </section>
+      <section>
+        <div class="switch-row">
+          <div class="switch-copy">
+            <b>自动更新频道列表</b>
+            <div class="hint">
+              默认关闭；开启后每次冷启动会在后台刷新，失败时继续使用上次频道列表
+            </div>
+          </div>
+          <input
+            id="autoUpdateChannelList"
+            aria-label="自动更新频道列表"
+            type="checkbox"
+            onchange="saveAutoUpdateChannelList()"
+          />
+        </div>
+      </section>
+      <section class="browser-section">
+        <div class="section-head"><h2>Ku9 JS</h2></div>
+        <div class="browser-settings-list">
+          <div class="browser-setting-row">
+            <div class="browser-setting-copy">
+              <b>在局域网上传 JS</b
+              ><span id="ku9JsUploadStatus">保存到电视 APP 的小写 js 目录，供 Ku9 源读取</span>
+            </div>
+            <button id="ku9JsUploadButton" onclick="chooseKu9JsFile()">选择文件</button>
+          </div>
+        </div>
+        <div class="config-note">
+          酷9源仅支持 Android 5.0 及以上；仅支持 .js 文件，单个文件最大 2
+          MB；上传同名文件时会覆盖原文件。
+        </div>
+      </section>
+    </main>
+    <div id="message" class="message"></div>
+    <div
+      id="recommendedSourcePicker"
+      class="source-picker"
+      onclick="closeRecommendedSourcePicker(event)"
+    >
+      <div class="source-picker-card" onclick="event.stopPropagation()">
+        <div class="source-picker-head">
+          <b>选择推荐源</b><button onclick="closeRecommendedSourcePicker()">取消</button>
+        </div>
+        <div id="recommendedSourceChoices"></div>
+      </div>
+    </div>
+    <input
+      id="playlistFilePicker"
+      type="file"
+      accept=".m3u,.m3u8,.txt,.html,.htm,text/plain,text/html,application/vnd.apple.mpegurl"
+      onchange="playlistFileSelected(this)"
+      class="initially-hidden"
+    /><input
+      id="ku9JsFilePicker"
+      type="file"
+      accept=".js,text/javascript,application/javascript"
+      onchange="ku9JsFileSelected(this)"
+      class="initially-hidden"
+    />
+    <script src="/js/navigation.js?v=20260926"></script>
+    <script src="/js/common.js?v=20260926-nav"></script>
+    <script src="/js/pages/channels.js"></script>
+  </body>
+</html>

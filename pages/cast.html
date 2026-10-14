@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>投屏与互联 · nTv</title>
+    <script src="/js/theme.js"></script>
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/night.css" />
+    <style>
+      .super-resolution-actions { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+      #compareSuperResolution { color: #007aff; font-size: 12px; font-weight: 400; padding: 6px 0;
+        border: 0; background: transparent; box-shadow: none; white-space: nowrap; }
+      html[data-theme="dark"] #compareSuperResolution { color: #64a8ff; background: transparent; }
+    </style>
+  </head>
+  <body data-parent="/index.html">
+    <main id="webViewCastPage" class="secondary-page channel-config-page">
+      <div class="top">
+        <button class="back-button" onclick="goBack()">‹ 返回</button>
+        <div id="castPageTitle" class="page-title">投屏与互联</div>
+        <div class="online"><span class="dot"></span><span id="castStatus">电视在线</span></div>
+      </div>
+      <section id="castVideoSection">
+        <div class="switch-row">
+          <div class="switch-copy"><b>系统投屏</b>
+            <div class="hint">投送整个手机屏幕，切换桌面或其他应用也会继续。4K 输出支持超分；受保护内容由系统限制显示。</div>
+          </div>
+          <button id="systemCastButton" onclick="startSystemCast()">系统投屏</button>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="castResolution">投屏分辨率</label
+            ><select id="castResolution" onchange="saveWebCastSettings()">
+              <option value="1280x720" selected="">720P</option>
+              <option value="1920x1080">1080P</option>
+              <option value="2560x1440">1440P（实验）</option>
+              <option value="3840x2160">2160P（实验）</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="castFps">投送帧率</label
+            ><select id="castFps" onchange="saveWebCastSettings()">
+              <option value="25" selected="">25 fps</option>
+              <option value="30">30 fps</option>
+              <option value="60">60 fps</option>
+              <option value="120">120 fps（高性能设备）</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="castCodec">视频编码</label
+            ><select id="castCodec" onchange="saveWebCastSettings()">
+              <option value="h264" selected="">H.264 · 兼容优先</option>
+              <option value="h265">H.265 / HEVC · 节省带宽</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="castTransport">传输协议</label>
+            <select id="castTransport" onchange="saveWebCastSettings()">
+              <option value="tcp" selected>TCP · 稳定优先（默认）</option>
+              <option value="udp">UDP · 低延迟</option>
+            </select>
+            <p class="hint">UDP 丢包可能造成花屏；更改后下次投屏生效，手机与电视需更新。</p>
+          </div>
+          <div class="field">
+            <label for="castBitrate">视频码率上限</label
+            ><select id="castBitrate" onchange="saveWebCastSettings()">
+              <option value="2">2 Mbps</option>
+              <option value="3" selected="">3 Mbps</option>
+              <option value="4">4 Mbps</option>
+              <option value="8">8 Mbps</option>
+              <option value="12">12 Mbps</option>
+              <option value="20">20 Mbps</option>
+              <option value="30">30 Mbps</option>
+            </select>
+          </div>
+        </div>
+        <p id="castCapabilityHint" class="hint">
+          60/120 fps 与 H.265 需要发送端编码器和接收端支持；不支持时自动回退。
+        </p>
+      </section>
+      <section id="castSuperResolutionSection">
+        <div class="switch-row">
+          <div class="switch-copy"><b>投屏超分</b>
+            <div class="hint">4K 投屏时，1080p 及以下视频和以 1080p 渲染的网页使用 SGSR 超分。可即时切换；对比原画会暂时关闭 2 秒后恢复，播放不中断。1080p 投屏不超分。</div>
+          </div>
+          <div class="super-resolution-actions">
+            <button id="compareSuperResolution" onclick="compareSuperResolution()" disabled>对比原画</button>
+            <input id="castSuperResolution" class="source-toggle" type="checkbox"
+              aria-label="投屏超分" onchange="saveSuperResolutionSetting()" />
+          </div>
+        </div>
+      </section>
+      <section id="castAudioSection">
+        <div class="switch-row">
+          <div class="switch-copy">
+            <b>投送声音</b>
+            <div id="castAudioHint" class="hint">
+              Android 10+，需要系统授权
+            </div>
+          </div>
+          <input
+            id="castAudio"
+            class="source-toggle"
+            aria-label="投送声音"
+            type="checkbox"
+            onchange="saveWebCastSettings()"
+          />
+        </div>
+      </section>
+
+      <section id="castDebugSection">
+        <div class="switch-row">
+          <div class="switch-copy"><b>投屏调试信息</b>
+            <div class="hint">在应用投屏画面右上角显示协议、分辨率、帧率、码率和音频状态，每秒刷新。</div>
+          </div>
+          <input id="castDebug" class="source-toggle" type="checkbox"
+            aria-label="投屏调试信息" onchange="saveCastDebugSetting()" />
+        </div>
+      </section>
+      <section id="wifiDirectSection">
+        <div class="switch-row">
+          <div class="switch-copy"><b>Wi-Fi Direct（实验性）</b>
+            <div id="wifiDirectHint" class="hint">默认关闭，使用路由器 IP。开启后尝试直连，部分设备可能频繁断开。</div>
+          </div>
+          <input id="wifiDirectExperimental" class="source-toggle" type="checkbox"
+            aria-label="Wi-Fi Direct（实验性）" onchange="saveWifiDirectSetting()" />
+        </div>
+      </section>
+    </main>
+    <div id="message" class="message"></div>
+    <script src="/js/navigation.js?v=20260926"></script>
+    <script src="/js/common.js?v=20260926-nav"></script>
+    <script src="/js/pages/cast.js"></script>
+  </body>
+</html>

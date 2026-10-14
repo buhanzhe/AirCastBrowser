@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f8">
+  <link rel="icon" href="data:,">
+  <title>视频录制</title>
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;background:#f7f7f8;color:#1d1d1f}
+    body{font:14px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    button,input,select{font:inherit}
+    .shell{width:min(760px,100%);margin:auto;padding:64px 16px 40px}
+    .top{position:fixed;top:0;left:50%;z-index:10;display:grid;grid-template-columns:76px minmax(0,1fr) 76px;align-items:center;width:calc(100% - 32px);max-width:728px;height:52px;min-height:52px;padding:8px 4px;transform:translateX(-50%);background:rgba(247,247,248,.94);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+    .back-button{min-height:34px;padding:6px 0;border:0;background:transparent;color:#007aff;text-align:left;font-size:14px;cursor:pointer}.page-title{text-align:center;font-size:16px;font-weight:750;letter-spacing:-.015em}
+    .connection{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:6px 0;border:0;background:transparent;color:#48484a;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dot{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:#aeb5bd}.connection.online .dot{background:#25c45a;box-shadow:0 0 0 3px rgba(37,196,90,.12)}.connection.bad .dot{background:#ff3b30}
+    .card{padding:24px 20px 20px;border:1px solid #e5e5ea;border-radius:18px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+    .identity{text-align:center}
+    .file-icon{position:relative;width:62px;height:76px;margin:0 auto 10px;border:5px solid #242a30;border-radius:12px;background:#fff}
+    .file-icon:before{content:"";position:absolute;right:-5px;top:-5px;width:23px;height:23px;border-left:5px solid #242a30;border-bottom:5px solid #242a30;border-radius:0 0 0 7px;background:#f5f6f8}
+    .live-tag{position:absolute;right:-17px;bottom:8px;padding:4px 7px;border-radius:6px;background:#e93245;color:#fff;font-size:12px;font-weight:800;letter-spacing:.04em}
+    .quality{display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;color:#34414d}
+    .quality select{border:0;background:transparent;color:#34414d;outline:0;padding:4px 20px 4px 5px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#596775 50%),linear-gradient(135deg,#596775 50%,transparent 50%);background-position:calc(100% - 9px) 50%,calc(100% - 5px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+    .meta{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;color:#66717c}
+    .badge{padding:3px 7px;border-radius:6px;background:#73808c;color:#fff;font-size:11px;font-weight:750}
+    .filename{max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .rename{border:0;background:#f3f5f7;border-radius:8px;padding:6px 8px;color:#1677ff;font-weight:800;cursor:pointer}
+    .rename-input{display:none;width:min(430px,100%);margin:9px auto 0;padding:9px 11px;border:1px solid #cfd5db;border-radius:10px;outline:0;text-align:center}.rename-input:focus{border-color:#1677ff;box-shadow:0 0 0 3px rgba(22,119,255,.1)}
+    .progress-wrap{height:42px;margin:22px 0 5px;border-radius:7px;background:#e8ebef;overflow:hidden}
+    .progress{display:flex;align-items:center;justify-content:center;width:0;height:100%;min-width:0;background:#007aff;color:#fff;font-weight:800;white-space:nowrap;transition:width .25s ease}
+    .progress.indeterminate{width:100%;background-image:linear-gradient(135deg,rgba(255,255,255,.18) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.18) 50%,rgba(255,255,255,.18) 75%,transparent 75%,transparent);background-size:24px 24px;animation:stripe .8s linear infinite}
+    @keyframes stripe{to{background-position:24px 0}}
+    .stats{display:flex;justify-content:center;color:#35404a;font-size:16px;font-variant-numeric:tabular-nums;min-height:24px}.stats span{white-space:nowrap}.stats span+span{margin-left:20px}
+    .substats{text-align:center;color:#89929c;font-size:11px;min-height:18px;margin-top:2px}
+    .controls{display:flex;justify-content:center;gap:18px;margin-top:20px}
+    .control{display:flex;align-items:center;justify-content:center;width:64px;height:64px;padding:0;border:1px solid #e1e3e7;border-radius:16px;background:#fff;color:#1d1d1f;box-shadow:0 3px 12px rgba(20,29,38,.07);cursor:pointer;transition:transform .12s ease,opacity .12s ease,background .12s ease}.control:active{transform:scale(.95)}.control:disabled{opacity:.32;cursor:default;transform:none}
+    .control.download{border-color:#d6e8ff;background:#f1f7ff;color:#007aff}.control.settings-button{background:#f5f5f7;color:#3a3a3c}
+    .control.screenshot-button{border-color:#d6e8ff;background:#f1f7ff;color:#007aff;flex-direction:column;gap:2px}.screenshot-button .control-icon{width:26px;height:26px}.screenshot-button small{font-size:11px}
+    .screenshot-result{margin-top:18px;padding-top:16px;border-top:1px solid #e5e5ea}.screenshot-result img{display:block;width:100%;max-height:420px;object-fit:contain;background:#111;border-radius:10px}.screenshot-result a{display:block;margin-top:10px;padding:12px;border-radius:10px;background:#007aff;color:white;text-align:center;text-decoration:none}.screenshot-result p{font-size:12px;color:#77818b;line-height:1.6}.screenshot-result[hidden]{display:none}
+    .control-icon{display:flex;align-items:center;justify-content:center;width:31px;height:31px}.control-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .record-shape{width:25px;height:25px;border-radius:50%;background:#e9384a;border:7px solid #e9384a}.recording .record-shape{width:22px;height:22px;border:0;border-radius:5px;background:#e9384a}
+    .notice{display:none;margin-top:14px;padding:13px 14px;border-radius:12px;background:#fff2f1;color:#a52420;line-height:1.55}.notice.show{display:block}.notice b{display:block;margin-bottom:3px}
+    .settings{display:none;margin-top:14px;padding:14px;border:1px solid #e6e8ec;border-radius:15px;background:#fafbfc}.settings.show{display:block}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;margin:0 0 5px;color:#77818b;font-size:11px;font-weight:700}.field select,.field input{width:100%;height:42px;padding:8px 10px;border:1px solid #d8dde2;border-radius:10px;background:#fff;outline:0}
+    .help{margin:11px 1px 0;color:#7b858e;font-size:11px;line-height:1.55}
+    .legal{margin-top:13px;text-align:center;color:#929aa2;font-size:10px;line-height:1.55}.legal a{color:#1677ff;text-decoration:none}
+    @media(max-width:520px){.shell{padding:58px 9px 30px}.top{width:calc(100% - 18px);height:50px;min-height:50px;padding:7px 2px}.card{padding:20px 12px 17px;border-radius:16px}.stats{font-size:14px}.stats span+span{margin-left:16px}.controls{gap:12px}.control{width:56px;height:60px}.settings-grid{grid-template-columns:1fr}.connection{font-size:10px}.progress-wrap{margin-top:18px}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <div class="top"><button class="back-button" type="button" onclick="backToManager()">‹ 返回</button><div class="page-title">视频录制</div><div id="connection" class="connection"><span class="dot"></span><span id="connectionText">连接中</span></div></div>
+  <section class="card">
+    <div class="identity">
+      <div class="file-icon"><span class="live-tag">LIVE</span></div>
+      <div class="quality"><select id="quality" aria-label="录制清晰度" disabled><option>正在读取清晰度</option></select></div>
+      <div class="meta"><span class="badge">文件名</span><span id="filename" class="filename">NTV-Live</span><button class="rename" type="button" onclick="editFilename()">编辑</button></div>
+      <input id="filenameInput" class="rename-input" maxlength="80" aria-label="录制文件名">
+    </div>
+    <div class="progress-wrap"><div id="progress" class="progress">准备录制</div></div>
+    <div class="stats"><span id="size">0 B</span><span id="speed">0 KB/s</span><span id="elapsed">00:00:00</span></div>
+    <div id="substats" class="substats">等待电视视频流</div>
+    <div class="controls">
+      <button id="recordButton" class="control" type="button" aria-label="开始录制" onclick="toggleRecording()" disabled><span class="record-shape"></span></button>
+      <button id="downloadButton" class="control download" type="button" aria-label="下载视频" title="下载视频" onclick="downloadRecording()" disabled><span class="control-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 4v15"></path><path d="m10.5 14.5 5.5 5.5 5.5-5.5"></path><path d="M6 21v5h20v-5"></path></svg></span></button>
+      <button id="screenshotButton" class="control screenshot-button" type="button" aria-label="截屏当前节目" title="截屏当前节目" onclick="captureVideoScreenshot()"><span class="control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h4l2-3h4l2 3h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"></path><circle cx="12" cy="13" r="4"></circle></svg></span><small>截屏</small></button>
+      <button class="control settings-button" type="button" aria-label="录制设置" title="录制设置" onclick="toggleSettings()"><span class="control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.37.36.7.66.96.3.25.68.4 1.07.4H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"></path></svg></span></button>
+    </div>
+    <div id="notice" class="notice"></div>
+    <p class="help">截屏需播放设备为 Android 7.0 或以上，并保持视频界面在前台；可从另一台手机的网页保存。</p>
+    <div id="screenshotResult" class="screenshot-result" hidden><img id="screenshotPreview" alt="当前节目的视频截屏"><a id="screenshotSave" download="nTv-screenshot.png">保存截屏（PNG）</a><p>只截取视频画面，不含菜单和调试信息。若未自动下载，可点击保存；手机也可长按图片保存。</p></div>
+    <div id="settings" class="settings">
+      <div class="settings-grid">
+        <div class="field"><label for="format">保存格式</label><select id="format" disabled><option value="mp4">MP4</option></select></div>
+        <div class="field"><label for="memoryLimit">单次录制上限</label><select id="memoryLimit"><option value="256">256 MB</option><option value="512" selected>512 MB</option><option value="1024">1 GB</option></select></div>
+      </div>
+      <p class="help">录制和 MP4 合并全部在当前浏览器完成，不会上传视频。较长节目建议分段录制；录制期间请保持页面在前台。</p>
+    </div>
+  </section>
+  <div class="legal">界面参考 FetchV 的录制信息结构，代码为 NTV 独立实现。仅录制你有权保存的内容。<br><a href="https://github.com/buhanzhe/NativeWasmTv" rel="noopener">NativeWasmTv</a></div>
+</main>
+
+<script>
+// The independently hosted recorder has no management assets. Load navigation only on the receiver route.
+if(location.pathname==='/video-recorder.html'&&(location.port||/[?&]__ntvNav=/.test(location.search)))document.write('<script src="/js/navigation.js?v=20260926"><\/script>');
+</script>
+<script>
+/* Browser shim used by the HLS parser for ordinary web fetches. */
+(function(){
+  function fetchForMux(message,callback){
+    if(!message||message.cmd!=='FETCH_DATA'){callback&&callback(null);return}
+    var p=message.parameter||{},options={method:p.method||'GET',headers:p.headers||{},cache:'no-store',mode:'cors'};
+    try{options.targetAddressSpace=isLoopbackHost(tvHost)?'loopback':'local'}catch(ignore){}
+    fetch(p.url,options).then(function(response){if(!response.ok)throw new Error('HTTP '+response.status);return response.arrayBuffer()}).then(function(buffer){callback({ok:true,content:buffer})}).catch(function(error){callback({ok:false,message:error.message})})
+  }
+  window.chrome=window.chrome||{};
+  window.chrome.runtime=window.chrome.runtime||{};
+  window.chrome.runtime.sendMessage=fetchForMux;
+  window.browser=window.browser||window.chrome;
+  window.MediaSource=window.MediaSource||{isTypeSupported:function(){return false}};
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/gh/daoquangphuong/fetchv@ccb34acb844d3145af36681d3221523ec3881501/libs/hls.1.1.2.branch.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mux.js@6.3.0/dist/mux.min.js"></script>
+<script src="mp4-finalizer.js?v=2"></script>
+<script>
+var params=new URLSearchParams(location.search),tvHost=(params.get('ip')||'').trim(),tvPort=(params.get('port')||'9966').trim();
+var baseUrl='',tvState=null,mediaUrl='',variants=[],recording=false,preparing=false,firstPlaylist=true,pollTimer=null,clockTimer=null,downloadChain=Promise.resolve();
+var seen={},segments=[],totalBytes=0,failedSegments=0,recordingStartedAt=0,lastSpeedBytes=0,lastSpeedAt=0,downloadUrl='';
+var recordButton=document.getElementById('recordButton'),downloadButton=document.getElementById('downloadButton'),quality=document.getElementById('quality');
+var screenshotUrl='',screenshotBusy=false;
+
+async function captureVideoScreenshot(){
+  if(screenshotBusy)return;
+  if(!baseUrl){showNotice('无法截屏','请从设备管理页进入视频录制页面。');return}
+  var button=document.getElementById('screenshotButton');screenshotBusy=true;button.disabled=true;
+  try{
+    if(window.NtvDevice&&typeof NtvDevice.saveVideoScreenshot==='function'){
+      NtvDevice.saveVideoScreenshot();return;
+    }
+    var response=await localFetch(baseUrl+'/api/recording/screenshot?t='+Date.now());
+    if(!response.ok){var errorData={};try{errorData=await response.json()}catch(ignore){}throw new Error(errorData.message||'截屏失败：HTTP '+response.status)}
+    var blob=await response.blob();if(blob.type.indexOf('image/png')!==0||!blob.size)throw new Error('设备没有返回有效截屏，请更新设备端 APP');
+    if(screenshotUrl)URL.revokeObjectURL(screenshotUrl);
+    screenshotUrl=URL.createObjectURL(blob);
+    document.getElementById('screenshotPreview').src=screenshotUrl;
+    var save=document.getElementById('screenshotSave');save.href=screenshotUrl;save.download=defaultFilename('nTv-screenshot')+'.png';
+    document.getElementById('screenshotResult').hidden=false;save.click();
+  }catch(error){showNotice('无法截屏',error.message)}finally{screenshotBusy=false;button.disabled=false}
+}
+window.addEventListener('unload',function(){if(screenshotUrl)URL.revokeObjectURL(screenshotUrl)});
+
+function backToManager(){if(window.NtvNavigation){NtvNavigation.back(false);return}if(window.NtvDevice&&NtvDevice.navigateBack){NtvDevice.navigateBack();return}if(baseUrl)location.replace(baseUrl+'/index.html')}
+function isLoopbackHost(host){host=String(host||'').toLowerCase().replace(/^\[|\]$/g,'');return host==='127.0.0.1'||host==='localhost'||host==='::1'||host==='0.0.0.0'||/^127\./.test(host)}
+function sanitizeHost(host){return String(host||'').replace(/^https?:\/\//i,'').replace(/[\/?#].*$/,'').replace(/:\d+$/,'').trim()}
+function localFetch(url,options){options=options||{};options.cache='no-store';options.mode='cors';try{options.targetAddressSpace=isLoopbackHost(tvHost)?'loopback':'local';return fetch(new Request(url,options))}catch(error){delete options.targetAddressSpace;return fetch(url,options)}}
+function sourceFetch(url){return fetch(url,{cache:'no-store',mode:'cors',credentials:'omit'})}
+function mediaFetch(url){return baseUrl&&String(url).indexOf(baseUrl)===0?localFetch(url):sourceFetch(url)}
+function setConnection(text,state){var box=document.getElementById('connection');box.className='connection'+(state?' '+state:'');document.getElementById('connectionText').textContent=text}
+function showNotice(title,message){var box=document.getElementById('notice');box.innerHTML='<b></b><span></span>';box.querySelector('b').textContent=title;box.querySelector('span').textContent=message;box.className='notice show'}
+function clearNotice(){document.getElementById('notice').className='notice'}
+function setStatus(text,active){var bar=document.getElementById('progress');bar.textContent=text;bar.className='progress'+(active?' indeterminate':'');bar.style.width=active?'100%':(segments.length?'100%':'0')}
+function formatBytes(value){if(value<1024)return value+' B';if(value<1048576)return(value/1024).toFixed(0)+' KB';if(value<1073741824)return(value/1048576).toFixed(2)+' MB';return(value/1073741824).toFixed(2)+' GB'}
+function formatTime(seconds){seconds=Math.max(0,Math.floor(seconds||0));var h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return[h,m,s].map(function(v){return String(v).padStart(2,'0')}).join(':')}
+function safeFilename(value){return String(value||'NTV-Live').replace(/[\\/:*?"<>|]/g,'-').replace(/^\s+|\s+$/g,'').slice(0,80)||'NTV-Live'}
+function defaultFilename(name){var d=new Date(),stamp=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+String(d.getSeconds()).padStart(2,'0');return safeFilename((name||'NTV-Live')+'-'+stamp)}
+function editFilename(){var label=document.getElementById('filename'),input=document.getElementById('filenameInput');input.value=label.textContent;input.style.display='block';input.focus();input.select();function done(){label.textContent=safeFilename(input.value);input.style.display='none';input.removeEventListener('blur',done);input.removeEventListener('keydown',key)}function key(event){if(event.key==='Enter')done();else if(event.key==='Escape'){input.value=label.textContent;done()}}input.addEventListener('blur',done);input.addEventListener('keydown',key)}
+function toggleSettings(){document.getElementById('settings').classList.toggle('show')}
+
+function parseAttributes(text){var result={},regex=/([A-Z0-9-]+)=("[^"]*"|[^,]*)/g,match;while((match=regex.exec(text))){result[match[1]]=match[2].replace(/^"|"$/g,'')}return result}
+function parseMasterPlaylist(text,url){
+  try{if(window.M3U8Parser&&M3U8Parser.parseMasterPlaylist){var parsed=M3U8Parser.parseMasterPlaylist(text,url),levels=parsed&&parsed.levels||[];if(levels.length)return levels.map(function(level,index){return{url:level.url||level.uri||'',width:Number(level.width)||0,height:Number(level.height)||0,bandwidth:Number(level.bitrate||level.bandwidth)||0,index:index}}).filter(function(item){return item.url})}}catch(ignore){}
+  var lines=text.replace(/\r/g,'').split('\n'),items=[];
+  for(var i=0;i<lines.length;i++){if(lines[i].indexOf('#EXT-X-STREAM-INF:')!==0)continue;var attrs=parseAttributes(lines[i].slice(18)),next='';for(var j=i+1;j<lines.length;j++){if(lines[j]&&lines[j][0]!=='#'){next=lines[j].trim();i=j;break}}if(!next)continue;var resolution=(attrs.RESOLUTION||'0x0').split('x');items.push({url:new URL(next,url).href,width:Number(resolution[0])||0,height:Number(resolution[1])||0,bandwidth:Number(attrs.BANDWIDTH)||0,index:items.length})}
+  return items;
+}
+function parseMediaPlaylist(text,url){
+  try{if(window.M3U8Parser&&M3U8Parser.parseLevelPlaylist){var details=M3U8Parser.parseLevelPlaylist(text,url,0,'main',0),frags=details&&details.fragments||[];if(frags.length)return{target:Number(details.targetduration)||4,segments:frags.map(function(f){return{url:f.url||new URL(f.relurl||'',f.baseurl||url).href,duration:Number(f.duration)||0,discontinuity:Number(f.cc)||0,sn:f.sn}})}}}catch(ignore){}
+  var lines=text.replace(/\r/g,'').split('\n'),duration=0,target=4,sequence=0,discontinuity=0,items=[];
+  for(var i=0;i<lines.length;i++){var line=lines[i].trim();if(line.indexOf('#EXT-X-TARGETDURATION:')===0)target=Number(line.split(':')[1])||target;else if(line.indexOf('#EXT-X-MEDIA-SEQUENCE:')===0)sequence=Number(line.split(':')[1])||0;else if(line.indexOf('#EXTINF:')===0)duration=parseFloat(line.slice(8))||0;else if(line==='#EXT-X-DISCONTINUITY')discontinuity++;else if(line&&line[0]!=='#'){items.push({url:new URL(line,url).href,duration:duration||target,discontinuity:discontinuity,sn:sequence+items.length});duration=0}}
+  return{target:target,segments:items};
+}
+function variantLabel(item,index){if(item.height)return item.width+'×'+item.height;if(item.bandwidth)return Math.round(item.bandwidth/1000)+' kbps';return'线路 '+(index+1)}
+function selectDefaultVariant(){var mode=tvState&&tvState.settings&&tvState.settings.resolutionMode||'high';if(!variants.length)return 0;if(mode==='low')return variants.length-1;if(mode==='medium')return Math.floor((variants.length-1)/2);return 0}
+function renderVariants(){quality.innerHTML='';if(!variants.length){var option=document.createElement('option');var r=tvState&&tvState.recording||{};option.textContent=r.width&&r.height?r.width+'×'+r.height:'当前播放清晰度';option.value='direct';quality.appendChild(option);quality.disabled=true;return}variants.sort(function(a,b){return(b.height-a.height)||(b.bandwidth-a.bandwidth)});for(var i=0;i<variants.length;i++){var option=document.createElement('option');option.value=String(i);option.textContent=variantLabel(variants[i],i);quality.appendChild(option)}quality.value=String(selectDefaultVariant());quality.disabled=recording;mediaUrl=variants[Number(quality.value)].url;quality.onchange=function(){if(!recording)mediaUrl=variants[Number(this.value)].url}}
+
+async function connect(){
+  tvHost=sanitizeHost(tvHost);
+  if(!tvHost){setConnection('缺少电视地址','bad');showNotice('请从电视管理页进入','请先用手机打开电视显示的局域网管理地址，再点击“视频录制”。');return false}
+  baseUrl='http://'+tvHost+':'+(Number(tvPort)||9966);
+  var connected=false;
+  try{
+    var response=await localFetch(baseUrl+'/api/state');if(!response.ok)throw new Error('HTTP '+response.status);tvState=await response.json();if(!tvState.ok)throw new Error(tvState.message||'电视状态不可用');
+    connected=true;
+    setConnection('电视在线','online');clearNotice();var current=tvState.recording||{};document.getElementById('filename').textContent=defaultFilename(current.name||tvState.current&&tvState.current.name);
+    if(!current.available){throw new Error('当前频道还没有可录制的视频流')}
+    await loadRecordingManifest();recordButton.disabled=false;setStatus('准备录制',false);document.getElementById('substats').textContent=(current.group||'')+(current.name?' · '+current.name:'');return true;
+  }catch(error){if(!connected)setConnection('无法连接电视','bad');showNotice('录制服务不可用',error.message+(connected?'。截屏按钮仍可独立使用。':'。若浏览器询问本地网络权限，请选择允许。'));setStatus(connected?'当前源不可录制':'连接失败',false);recordButton.disabled=false;return false}
+}
+async function loadRecordingManifest(){var recording=tvState.recording||{},proxyUrl=baseUrl+(recording.playlistPath||'/api/recording/playlist'),directUrl=recording.sourceMode==='direct'?String(recording.sourceUrl||''):'';var url=directUrl||proxyUrl,response;try{response=await mediaFetch(url);if(!response.ok)throw new Error('HTTP '+response.status)}catch(error){if(!directUrl)throw error;url=proxyUrl;response=await localFetch(url);if(!response.ok)throw new Error('读取播放清单失败：HTTP '+response.status);document.getElementById('substats').textContent='源站限制跨域，已改用电视转发'}var text=await response.text();variants=parseMasterPlaylist(text,url);if(variants.length){renderVariants()}else{mediaUrl=url;renderVariants()}}
+
+function resetRecording(){if(downloadUrl){URL.revokeObjectURL(downloadUrl);downloadUrl=''}seen={};segments=[];totalBytes=0;failedSegments=0;firstPlaylist=true;downloadChain=Promise.resolve();recordingStartedAt=Date.now();lastSpeedAt=recordingStartedAt;lastSpeedBytes=0;downloadButton.disabled=true;updateStats()}
+async function toggleRecording(){if(preparing)return;if(recording){await stopRecording(false);return}await startRecording()}
+async function startRecording(){try{preparing=true;recordButton.disabled=true;var connected=await connect();if(!connected||!tvState||!tvState.recording.available){preparing=false;return}resetRecording();recording=true;preparing=false;recordButton.disabled=false;recordButton.classList.add('recording');recordButton.setAttribute('aria-label','停止录制');quality.disabled=true;setStatus('Live Recording',true);clockTimer=setInterval(updateStats,500);await pollPlaylist()}catch(error){preparing=false;recording=false;recordButton.disabled=false;showNotice('无法开始录制',error.message);setStatus('录制失败',false)}}
+async function pollPlaylist(){if(!recording)return;try{var response=await mediaFetch(mediaUrl);if(!response.ok)throw new Error('HTTP '+response.status);var text=await response.text();if(text.indexOf('#EXT-X-STREAM-INF')>=0){variants=parseMasterPlaylist(text,mediaUrl);renderVariants();mediaUrl=variants[selectDefaultVariant()].url;return schedulePoll(500)}var parsed=parseMediaPlaylist(text,mediaUrl),items=parsed.segments;if(!items.length)throw new Error('播放清单没有可录制分片');var start=0;if(firstPlaylist){for(var i=0;i<items.length-1;i++)seen[items[i].url]=true;start=Math.max(0,items.length-1);firstPlaylist=false}for(var j=start;j<items.length;j++){var item=items[j];if(seen[item.url])continue;seen[item.url]=true;downloadChain=downloadChain.then(downloadSegment.bind(null,item))}schedulePoll(Math.max(700,Math.min(2500,parsed.target*500)))}catch(error){failedSegments++;document.getElementById('substats').textContent='等待新分片 · 重试 '+failedSegments;schedulePoll(Math.min(3000,700+failedSegments*250))}}
+function schedulePoll(delay){clearTimeout(pollTimer);if(recording)pollTimer=setTimeout(pollPlaylist,delay)}
+async function downloadSegment(item){var lastError=null;for(var attempt=1;attempt<=3;attempt++){try{var response=await mediaFetch(item.url);if(!response.ok)throw new Error('HTTP '+response.status);var buffer=await response.arrayBuffer();segments.push({data:new Uint8Array(buffer),duration:item.duration||4,discontinuity:item.discontinuity||0,sn:item.sn});totalBytes+=buffer.byteLength;failedSegments=0;updateStats();var limit=(Number(document.getElementById('memoryLimit').value)||512)*1048576;if(totalBytes>=limit&&recording){showNotice('已达到单次录制上限','正在停止并合并，请保存后再开始下一段。');setTimeout(function(){stopRecording(true)},0)}return}catch(error){lastError=error;await new Promise(function(resolve){setTimeout(resolve,250*attempt)})}}failedSegments++;document.getElementById('substats').textContent='分片下载失败 '+failedSegments+' 次：'+(lastError&&lastError.message||'未知错误')}
+function updateStats(){var now=Date.now(),elapsed=recordingStartedAt?(now-recordingStartedAt)/1000:0,deltaSeconds=Math.max(.25,(now-lastSpeedAt)/1000),speed=recording?(totalBytes-lastSpeedBytes)/deltaSeconds:0;document.getElementById('size').textContent=formatBytes(totalBytes);document.getElementById('speed').textContent=formatBytes(Math.max(0,Math.round(speed)))+'/s';document.getElementById('elapsed').textContent=formatTime(elapsed);document.getElementById('substats').textContent=segments.length+' 个分片'+(failedSegments?' · '+failedSegments+' 次重试':'');lastSpeedAt=now;lastSpeedBytes=totalBytes}
+async function stopRecording(autoStopped){if(!recording&&!preparing)return;recording=false;preparing=true;clearTimeout(pollTimer);clearInterval(clockTimer);recordButton.classList.remove('recording');recordButton.disabled=true;setStatus('正在完成分片…',true);try{await downloadChain;if(!segments.length)throw new Error('尚未录制到完整分片');await prepareDownload();setStatus(autoStopped?'已自动停止，可保存':'录制完成，可保存',false);downloadButton.disabled=false}catch(error){showNotice('MP4 合并失败',error.message);setStatus('MP4 合并失败',false)}finally{preparing=false;recordButton.disabled=false;recordButton.setAttribute('aria-label','开始新录制');quality.disabled=variants.length===0;updateStats()}}
+async function prepareDownload(){if(downloadUrl){URL.revokeObjectURL(downloadUrl);downloadUrl=''}downloadUrl=await transmuxToMp4()}
+function readSegmentBytes(segment){if(segment&&segment.data)return Promise.resolve(segment.data instanceof Uint8Array?segment.data:new Uint8Array(segment.data));var blob=segment&&segment.blob;if(!blob)return Promise.reject(new Error('录制分片数据无效'));if(typeof blob.arrayBuffer==='function')return blob.arrayBuffer().then(function(buffer){return new Uint8Array(buffer)});return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(new Uint8Array(reader.result))};reader.onerror=function(){reject(reader.error||new Error('无法读取录制分片'))};reader.readAsArrayBuffer(blob)})}
+async function transmuxToMp4(){
+  if(!window.muxjs||!muxjs.mp4||typeof muxjs.mp4.Transmuxer!=='function')throw new Error('音视频转换组件未加载');
+  if(!window.NtvMp4Finalizer||typeof NtvMp4Finalizer.finalize!=='function')throw new Error('MP4 时间轴组件未加载');
+  setStatus('正在解析音视频轨道…',true);
+  var initSegment=null,mediaSegments=[],muxError=null,transmuxer=new muxjs.mp4.Transmuxer({keepOriginalTimestamps:false,remux:true});
+  transmuxer.on('data',function(output){if(!initSegment&&output.initSegment&&output.initSegment.byteLength)initSegment=output.initSegment;if(output.data&&output.data.byteLength)mediaSegments.push(output.data)});
+  transmuxer.on('error',function(error){muxError=error||new Error('音视频转换失败')});
+  for(var i=0;i<segments.length;i++){
+    var bytes=await readSegmentBytes(segments[i]);transmuxer.push(bytes);transmuxer.flush();
+    document.getElementById('substats').textContent='解析分片 '+(i+1)+'/'+segments.length;
+    if(i%3===2)await new Promise(function(resolve){setTimeout(resolve,0)});
+  }
+  if(muxError)throw muxError;if(!initSegment||!mediaSegments.length)throw new Error('视频轨道不完整，无法生成 MP4');
+  setStatus('正在建立 MP4 时间轴…',true);
+  var finalized=NtvMp4Finalizer.finalize(initSegment,mediaSegments),url=URL.createObjectURL(finalized.blob);
+  document.getElementById('substats').textContent='MP4 已就绪 · '+finalized.duration.toFixed(1)+' 秒';
+  return url;
+}
+async function downloadRecording(){if(recording)await stopRecording(false);if(!downloadUrl){if(!segments.length){showNotice('没有可保存内容','请先开始录制并等待至少一个完整分片。');return}await prepareDownload()}var link=document.createElement('a');link.href=downloadUrl;link.download=safeFilename(document.getElementById('filename').textContent)+'.mp4';document.body.appendChild(link);link.click();link.remove()}
+window.addEventListener('beforeunload',function(event){if(recording){event.preventDefault();event.returnValue='录制仍在进行，离开页面会丢失未保存内容。'}if(downloadUrl)URL.revokeObjectURL(downloadUrl)});
+connect();
+</script>
+</body>
+</html>
