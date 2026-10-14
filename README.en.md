@@ -1,6 +1,6 @@
 # AirCastBrowser
 
-An Android browser for phones, tablets, TVs and boxes, with tabs, media playback, AirPlay / Miracast casting, and local web management. Requires Android 5.0 or later.
+An Android browser for phones, tablets, TVs and boxes, with tabs, media playback, AirPlay casting, web TV, and local web management. Requires Android 5.0 or later.
 
 Download from [GitHub Releases](https://github.com/buhanzhe/AirCastBrowser/releases/latest):
 
